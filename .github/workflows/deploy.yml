@@ -22,11 +22,14 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Without the FTP secrets there is nowhere to deploy to, so skip rather
+    # than fail. Add the secrets and this starts running by itself.
+    if: ${{ vars.DEPLOY_ENABLED != 'false' && secrets.FTP_SERVER != '' }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: npm
@@ -51,7 +54,7 @@ jobs:
           echo "Release contents:" && ls -la release
 
       - name: Upload to Namecheap
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}

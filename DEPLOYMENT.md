@@ -129,6 +129,10 @@ Already configured in `.github/workflows/deploy.yml`.
 
 3. Push to `main`. The workflow installs, typechecks, tests, builds, assembles
    a release folder and uploads it to `/leadgeneration/`.
+
+   Until `FTP_SERVER` exists the deploy job **skips itself**, so pushes are not
+   marked failed while the hosting side is still being set up. Adding the
+   secrets is what switches it on.
 4. cPanel → **Setup Node.js App** → **Restart** so Passenger picks up the new
    files.
 
