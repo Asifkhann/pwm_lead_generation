@@ -1,0 +1,46 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit -p tsconfig.test.json",
+    "backfill:follow-ups": "tsx src/scripts/backfillFollowUps.ts",
+    "backfill:status-timestamps": "tsx src/scripts/backfillStatusTimestamps.ts",
+    "create:admin": "tsx src/scripts/createAdmin.ts",
+    "sync:indexes": "tsx src/scripts/syncIndexes.ts",
+    "reset:password": "tsx src/scripts/resetPassword.ts",
+    "link:managers": "tsx src/scripts/linkAssignedManagers.ts",
+    "migrate:notes": "tsx src/scripts/migrateNotes.ts",
+    "test": "MONGODB_URI=mongodb://127.0.0.1:27017/perfect-web-metrix-test node --import tsx --test --test-concurrency=1 tests/*.test.ts",
+    "prod:create-admin": "node dist/scripts/createAdmin.js",
+    "prod:reset-password": "node dist/scripts/resetPassword.js",
+    "prod:sync-indexes": "node dist/scripts/syncIndexes.js",
+    "prod:link-managers": "node dist/scripts/linkAssignedManagers.js",
+    "prod:migrate-notes": "node dist/scripts/migrateNotes.js"
+  },
+  "type": "module",
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.9.4"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^26.4.1",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}

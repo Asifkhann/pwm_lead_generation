@@ -1,0 +1,32 @@
+# Used only if you deploy with cPanel's built-in Git Version Control
+# ("Manage" -> "Deploy HEAD Commit") instead of the GitHub Actions workflow.
+#
+# This builds on the server, which a shared plan may not have the memory for.
+# The Actions workflow is the more reliable route; this is the fallback when
+# you would rather not put FTP credentials into GitHub.
+#
+# Replace CPANEL_USER with your cPanel username before using it.
+---
+deployment:
+  tasks:
+    - export APP=/home/CPANEL_USER/leadgeneration
+    - export NODE_ENV=production
+
+    # Load the Node version cPanel created for this application.
+    - source /home/CPANEL_USER/nodevenv/leadgeneration/20/bin/activate
+
+    - /bin/mkdir -p $APP/public
+
+    # Build both halves from the checked-out repository.
+    - cd $DEPLOYPATH/server && npm ci && npm run build
+    - cd $DEPLOYPATH/client && npm ci && npm run build
+
+    # Ship only what runs in production.
+    - /bin/cp -R $DEPLOYPATH/server/dist/. $APP/dist/
+    - /bin/cp -R $DEPLOYPATH/client/dist/. $APP/public/
+    - /bin/cp $DEPLOYPATH/server/package.json $APP/package.json
+    - /bin/cp $DEPLOYPATH/server/package-lock.json $APP/package-lock.json
+    - cd $APP && npm ci --omit=dev
+
+    # Passenger picks up the change and restarts the application.
+    - /bin/mkdir -p $APP/tmp && /usr/bin/touch $APP/tmp/restart.txt

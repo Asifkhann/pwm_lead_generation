@@ -1,0 +1,65 @@
+# Builds the app and uploads it to Namecheap shared hosting over FTP.
+#
+# Building here rather than on the server matters: a Vite + TypeScript build
+# needs development dependencies and more memory than a shared plan reliably
+# gives, so only the finished output is shipped.
+#
+# Required repository secrets (Settings -> Secrets and variables -> Actions):
+#   FTP_SERVER    ftp.perfectwebmetrix.com
+#   FTP_USERNAME  the cPanel FTP account
+#   FTP_PASSWORD  its password
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            server/package-lock.json
+            client/package-lock.json
+
+      - name: Install dependencies
+        run: npm run install:all
+
+      - name: Build
+        run: npm run build:deploy
+
+      - name: Assemble what the server actually needs
+        run: |
+          mkdir -p release/public
+          cp -r server/dist release/dist
+          cp -r client/dist/. release/public/
+          cp server/package.json server/package-lock.json release/
+          # Production dependencies only — no build tooling on the server.
+          npm --prefix release ci --omit=dev
+          echo "Release contents:" && ls -la release
+
+      - name: Upload to Namecheap
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./release/
+          server-dir: /leadgeneration/
+          # Keep files Passenger and cPanel own.
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/.cache/**
